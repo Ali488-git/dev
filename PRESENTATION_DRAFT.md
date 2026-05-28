@@ -305,6 +305,102 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 
 ---
 
+## Migration Phases & Execution Plan
+
+### Phase 0 – Discovery & Validation
+**Objective**: Map current infrastructure and validate migration strategy
+
+**Internal Activities:**
+- Inventory all Terraform states and repositories
+- Identify current backends, variables, and secrets
+- Map each existing state to a future Terraform Cloud workspace
+
+**Partner Responsibilities:**
+- Review current Terraform execution model and backend usage
+- Validate state architecture and proposed workspace mapping strategy
+- Identify gaps or changes in recommended practices
+
+**Outcome**: Clear inventory and validated migration roadmap
+
+---
+
+### Phase 1 – Foundation & Initial Migration
+**Objective**: Establish Terraform Cloud platform and execute initial state migrations
+
+**Internal Activities:**
+- Configure TFC organization, teams, and permissions
+- Create Terraform Cloud control repository for platform configuration as code
+- Migrate existing Terraform state using Terraform CLI (one-time operation)
+- Validate clean plans and expected behavior post-migration
+
+**Partner Responsibilities:**
+- Assist with TFC organization setup
+- Configure or validate:
+  - SSO integration
+  - Project, team, and RBAC models
+  - VCS connections and execution modes
+- Support creation and review of Terraform Cloud control repository
+- Provide guided oversight during initial state migrations
+
+**Outcome**: Terraform Cloud platform operational; first state migrations validated
+
+---
+
+### Phase 2 – Pilot and Scale
+**Objective**: Establish repeatable migration process and expand across environments
+
+**Activities:**
+- Migrate low-risk non-production workspace first
+- Document repeatable migration runbook
+- Migrate remaining environments in risk-based waves
+- **Production environments migrated last**
+
+**Outcome**: Standardized migration process; most non-prod environments in TFC
+
+---
+
+### Phase 3 – Stabilization
+**Objective**: Clean up legacy systems and formalize operations
+
+**Activities:**
+- Retire legacy GitHub Actions Terraform logic
+- Remove old backend references and Azure Storage dependencies
+- Normalize variables, naming, and access controls
+- Formalize operating and support model
+
+**Outcome**: Single source of truth (TFC); legacy systems retired
+
+---
+
+### Phase 4 – Optimization (Optional, Future)
+**Objective**: Enable advanced capabilities for future growth
+
+**Potential Enhancements:**
+- Private module registry for standardized components
+- Dynamic Azure credentials with SSO
+- Policy-as-code and automated approvals
+- Drift detection and self-service provisioning
+
+**Outcome**: Platform ready for self-service and advanced automation
+
+---
+
+## Terraform State Migration Principle
+
+For each Terraform state, follow this consistent process:
+
+1. **Create** a corresponding Terraform Cloud workspace
+2. **Associate** it with the correct code path (Git repo and directory)
+3. **Migrate** state using Terraform CLI (one-time activity)
+4. **Validate** with a clean plan to ensure no unexpected changes
+
+> **Critical**: After migration, Terraform Cloud becomes the authoritative source for execution and state. There is no fallback to distributed backends.
+
+---
+
 ## Next Steps
 
-We'll walk through each repository in detail, discuss the current state vs. ideal state workflows, and outline the migration strategy to consolidate state management in Terraform Cloud while maintaining governance and approval workflows.
+1. Confirm stakeholder alignment on migration scope and timeline
+2. Engage HashiCorp partner for Phase 0 planning
+3. Inventory current Terraform states and repositories
+4. Begin Phase 1 planning with partner validation
