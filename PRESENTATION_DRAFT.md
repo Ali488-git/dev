@@ -398,9 +398,27 @@ For each Terraform state, follow this consistent process:
 
 ---
 
-## Next Steps
+## Risk Mitigation & Controls
 
-1. Confirm stakeholder alignment on migration scope and timeline
-2. Engage HashiCorp partner for Phase 0 planning
-3. Inventory current Terraform states and repositories
-4. Begin Phase 1 planning with partner validation
+| Risk | Control / Mitigation |
+|---|---|
+| **Incorrect state mapping** | Strict inventory and validation of all state files before migration |
+| **Variable mismatches** | Full documentation of runtime inputs and variables across all environments |
+| **Over-permissive access** | SSO-based least privilege access model with team-based RBAC |
+| **Environment inconsistency** | Enforced naming standards and workspace configuration standards |
+| **Over-engineering early phases** | Keep early phases minimal; focus on core functionality before optimization |
+
+---
+
+## Timeline and Next Steps
+
+### Timeline
+- **Foundation & migration**: 8–12 weeks
+- **Optimization and maturity**: 12–16 weeks
+- **Total duration**: ~5–7 months
+
+### Next Steps
+1. **Approve** this migration plan
+2. **Engage** a HashiCorp partner for guidance and validation
+3. **Schedule** migration kickoff meeting
+4. **Establish** monthly checkpoints for progress tracking and risk review
