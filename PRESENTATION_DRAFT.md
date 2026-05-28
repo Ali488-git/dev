@@ -257,4 +257,54 @@
 
 ---
 
-## Migration Path: GitHub Actions → Terraform Cloud
+## Terraform Cloud Migration Initiative
+
+### Overview
+Metrolinx is planning a phased migration of Terraform execution from GitHub Actions to HCP Terraform (Terraform Cloud). The goal is to establish Terraform Cloud as the single, authoritative platform for Terraform execution, state management, approvals, and auditability.
+
+> **Note**: This is a **re-platforming of Terraform operations, not a redesign of Azure infrastructure**. Existing environments, Terraform code, GitHub repositories, and Ansible workflows remain largely unchanged.
+
+### Key Outcomes
+- **Centralized Terraform state and execution** - Single source of truth for all infrastructure state
+- **Improved security and credential management** - Enhanced secret handling and access control
+- **Stronger governance, auditability, and compliance posture** - Comprehensive audit trails and approval workflows
+- **Scalable foundation for future self-service and platform capabilities** - Enterprise-grade infrastructure for growth
+
+### Risk Profile
+**Low** (incremental, non-production first approach)
+
+### In Scope
+- **Azure IaC** - Primary monorepo (heavy lift)
+- **Azure Products IaC** - Experiencing split state issues (primary pain point)
+- **AZ Policy Repo** - Lighter lift for policy definitions
+- **Ansible–TerraformCloud-Integration** - Already using TFC, needs standardization
+
+### The Core Problem: Split Terraform State
+
+A primary driver for this migration is the current **split state model**:
+
+- Resources managed via Terraform Cloud store state in Terraform Cloud
+- Pre-existing or legacy resources retain state in Azure Storage
+- This creates **partial state ownership** where different attributes of the same resource are tracked in different backends
+
+**Consequences of split state:**
+- Increased configuration drift
+- Inconsistent execution behavior
+- Harder troubleshooting and audits
+- Long-term operational risk
+
+**Migration objective**: Move all active Terraform state into Terraform Cloud so each workspace becomes the single system of record, eliminating partial state ownership.
+
+### Migration Approach
+
+The migration will be delivered in **controlled phases** to minimize risk, with targeted involvement from a certified **HashiCorp partner** during the early stages to ensure alignment with current HashiCorp Validated Designs and best practices.
+
+- **Partner engagement**: Primarily during Phase 0 and Phase 1
+- **Provides**: Validation, guidance, and initial enablement
+- **Reduces**: Architectural risk while ensuring internal ownership and knowledge transfer
+
+---
+
+## Next Steps
+
+We'll walk through each repository in detail, discuss the current state vs. ideal state workflows, and outline the migration strategy to consolidate state management in Terraform Cloud while maintaining governance and approval workflows.
