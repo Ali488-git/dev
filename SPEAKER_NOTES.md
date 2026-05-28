@@ -30,10 +30,6 @@ One important thing to note: **Backend configuration is injected at runtime thro
 
 **Architectural Question for HashiCorp**: Should workload directories map to one workspace per directory, one workspace per workload per environment, or consolidated workspaces by application team?
 
-### Azure-Products-IaC Repository
-This repository follows a **Product and workload deployment pattern** structure. 
-
-Current challenge: We have a **split state issue** where state management is fragmented across different backends. However, there's a silver lining—this repo already has an existing Terraform Cloud implementation. We can use it as a migration reference pattern for other repositories.
 
 ### az-policy-repo
 This one is relatively straightforward. It contains:
@@ -42,9 +38,6 @@ This one is relatively straightforward. It contains:
 - **Policy assignments** - How those policies are assigned to resources and management groups
 
 This is one of the lighter lifts in our migration scope.
-
-### Ansible-Terraform-Integration Repository
-This repository contains Ansible playbooks for infrastructure orchestration and integration with Terraform. It will be the critical integration point for triggering Terraform Cloud runs and orchestrating our target state workflow.
 
 ---
 
