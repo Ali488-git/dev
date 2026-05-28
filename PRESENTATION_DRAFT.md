@@ -31,3 +31,23 @@
 **Link**: [app.terraform.io/app/metrolinx/workspaces](https://app.terraform.io/app/metrolinx/workspaces)
 
 **Description**: Remote state management and workspace orchestration platform used across multiple repositories for centralized Terraform state management, VCS integration, and automated deployments. Enables team collaboration and provides enhanced security for sensitive infrastructure variables.
+
+---
+
+## Azure Subscription Mapping
+
+> **Note**: This section outlines our Azure subscription mapping. Each repository utilizes a combination of these subscriptions based on which environments it is being deployed to.
+
+| Subscription Display Name | Subscription Reference | Purpose | Environments |
+|---|---|---|---|
+| it-sub-sharedconnect-001 | data.azurerm_subscriptions.infraconnect | Shared connectivity | prod |
+| it-sub-sharedmgmt-001 | data.azurerm_subscriptions.mgmt | Management plane | prod |
+| it-sub-dev-001 | data.azurerm_subscriptions.infradev | Development workloads | dev |
+| it-sub-devdmz-001 | data.azurerm_subscriptions.infradevdmz | Dev DMZ | dev |
+| it-sub-sit-001 | data.azurerm_subscriptions.infrasit | SIT workloads | sit |
+| it-sub-sitdmz-001 | data.azurerm_subscriptions.infrasitdmz | SIT DMZ | sit |
+| it-sub-uat-001 | data.azurerm_subscriptions.infrauat | UAT workloads | uat |
+| it-sub-uatdmz-001 | data.azurerm_subscriptions.infrauatdmz | UAT DMZ | uat |
+| it-sub-prd-001 | data.azurerm_subscriptions.infraprd | Production workloads | prd |
+| it-sub-prddmz-001 | data.azurerm_subscriptions.infraprddmz | Production DMZ | prd |
+| it-sub-sbox-cloudteam-001 | data.azurerm_subscriptions.sbox | Sandbox/testing | sbox |
