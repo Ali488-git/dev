@@ -54,7 +54,91 @@
 
 ---
 
-## Ideal Workflow for Infrastructure Provisioning
+## Current Workflow with GitHub Actions
+
+```
+                                    ┌─────────────┐
+                                    │    START    │
+                                    └──────┬──────┘
+                                           │
+                                           ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Developer commits Terraform code to GitHub     │
+    │   (Feature branch or direct to main)             │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   GitHub Actions Workflow Triggered              │
+    │   - Runs on push/pull request events             │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Terraform Validate & Format Check              │
+    │   - terraform fmt                                │
+    │   - terraform validate                           │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+                   ◇─────────◇
+                  ╱           ╲
+                 ╱  Validation ╲
+                ╱   Successful?  ╲
+               ◇                  ◇
+               │ No           Yes │
+               │                  │
+               └─────┬────────────┘
+                     │
+                     ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Terraform Plan                                 │
+    │   - Generates execution plan                     │
+    │   - Stores plan artifact                         │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   PR Review & Approval (if PR workflow)           │
+    │   - Team reviews changes                         │
+    │   - Manual approval required                     │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Terraform Apply via GitHub Actions             │
+    │   - Applies plan to Azure                        │
+    │   - Updates Azure Storage state file             │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Resource provisioned in Azure                  │
+    │   - State stored in Azure Storage Account        │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+                   ◇─────────◇
+                   │    END    │
+                   └─────────┘
+```
+
+### Current Workflow Characteristics
+
+| Aspect | Details |
+|---|---|
+| **Trigger** | Developer push or pull request to GitHub repository |
+| **Validation** | Terraform fmt, validate, and plan stages |
+| **Approval Process** | GitHub PR reviews and manual approval before apply |
+| **Execution** | GitHub Actions runner executes Terraform apply |
+| **State Management** | Stored in Azure Storage Account (templated) |
+| **Integration** | Direct Git to Azure, no external CI/CD platform |
+| **Scaling** | Limited concurrent runs, runner resource constraints |
+| **Limitations** | No centralized workspace management, state management complexity with 24-30 workspaces |
+
+---
+
+## Ideal Workflow (Target State with Terraform Cloud)
 
 ```
                                     ┌─────────────┐
@@ -141,19 +225,72 @@
                    └─────────────┘
 ```
 
-### Workflow Stages
+### Ideal Workflow Characteristics (Target State)
 
-| Stage | Description |
+| Aspect | Details |
 |---|---|
-| **ServiceNow** | User initiates VM provisioning request with detailed specifications |
-| **Ansible** | Validates payload and triggers Terraform Cloud API via REST |
-| **Terraform Cloud (TFC)** | Executes plan and applies infrastructure changes |
-| **Azure** | Resources are provisioned and configured in the target subscription |
+| **Trigger** | ServiceNow ticket creation with VM specifications |
+| **Validation** | Cloud OPS manual validation + Ansible payload validation |
+| **Approval Process** | Manager approval + Cloud OPS approval + TFC plan review + Apply approval |
+| **Execution** | Terraform Cloud API execution via Ansible orchestration |
+| **State Management** | Centralized in Terraform Cloud (remote backend) |
+| **Integration** | ServiceNow → Ansible → Terraform Cloud → Azure (end-to-end automation) |
+| **Scaling** | Unlimited concurrent runs, enterprise-grade state locking |
+| **Benefits** | Centralized workspace management, enhanced collaboration, audit trails, cost estimation |
 
-### Key Features
+---
 
-- **Approval Gates**: Manager and Cloud OPS validation ensure compliance
-- **Automated Validation**: Ansible validates payloads before TFC execution
-- **ServiceNow Integration**: Automated task updates with plan results
-- **Approval Workflow**: TFC plan approval required before resource deployment
-- **Audit Trail**: Full visibility across all stages from request to deployment
+## Current vs. Ideal Workflow Comparison
+
+| Feature | Current (GitHub Actions) | Ideal (Terraform Cloud) | Gap/Benefit |
+|---|---|---|---|
+| **Trigger Mechanism** | Git commit/PR | ServiceNow ticket + Approval workflow | User-friendly, audit-compliant |
+| **State Management** | Azure Storage (distributed) | Terraform Cloud (centralized) | Better consistency, easier collaboration |
+| **Workspace Management** | Manual, dispersed | Centralized in TFC | Simplified management for 24-30 workspaces |
+| **Approval Workflow** | GitHub PR review | Multi-stage (Manager → CloudOps → TFC) | Enhanced governance and compliance |
+| **ServiceNow Integration** | Manual ticket tracking | Automated end-to-end integration | Reduced manual effort, improved tracking |
+| **Ansible Integration** | Not currently used | Ansible orchestrates TFC API | Greater automation and flexibility |
+| **Concurrency & Scaling** | GitHub runner limitations | Enterprise-grade TFC | Better performance and reliability |
+| **Cost Estimation** | No built-in capability | TFC provides cost estimates | Cost visibility before deployment |
+| **Audit Trail** | GitHub Actions logs | TFC audit logs + Ansible + ServiceNow | Comprehensive compliance tracking |
+| **Notification & Updates** | Slack/email alerts | Automated SNOW task updates | Real-time status visibility |
+
+---
+
+## Migration Path: GitHub Actions → Terraform Cloud
+
+### Phase 1: Hybrid Approach (Current + Preparation)
+- Keep existing GitHub Actions workflows operational for active repositories
+- Begin onboarding select workspaces to Terraform Cloud
+- Run both systems in parallel for safety and validation
+- **Repository Focus**: Start with `Azure-products-IaC` (already has mixed backend)
+
+### Phase 2: Ansible-Terraform Cloud Integration
+- Deploy Ansible playbooks for TFC API orchestration
+- Integrate with ServiceNow for automated ticket processing
+- Implement approval gating in TFC and Ansible
+- **Repository Focus**: Activate `Ansible-TerraformCloud-Integration`
+
+### Phase 3: Full Migration
+- Migrate remaining workspaces from Azure Storage to Terraform Cloud
+- Retire GitHub Actions Terraform apply workflows
+- Establish TFC as single source of truth
+- **Repositories Affected**: All IaC repositories
+
+### Phase 4: Optimization & Governance
+- Implement centralized RBAC and team management in TFC
+- Enforce policies and cost controls
+- Establish standardized workspace naming and organization
+- **Ongoing**: Both `AZ Policy repo` and TFC policy-as-code
+
+### Key Milestones
+| Milestone | Timeline | Status |
+|---|---|---|
+| Terraform Cloud setup and organization | Phase 1 | In Progress |
+| Ansible TFC Integration deployment | Phase 2 | Planned |
+| 50% workspace migration to TFC | Phase 2-3 | Planned |
+| 100% workspace migration complete | Phase 3 | Planned |
+| GitHub Actions retirement | Phase 3 | Planned |
+| Full optimization and governance | Phase 4 | Planned |
+
+> **Note**: This migration ensures zero downtime, maintains governance standards, and provides a clear pathway from the current state (GitHub Actions CI/CD) to the ideal state (ServiceNow → Ansible → Terraform Cloud → Azure automation).
