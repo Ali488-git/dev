@@ -210,7 +210,7 @@
                │  └──────────────────────────────────┘
                │
                ▼
-    ┌─────────��────────────────────────────────────────┐
+    ┌──────────────────────────────────────────────────┐
     │   Review and Approve Apply CI/Cloud OPS          │
     └──────────────────┬───────────────────────────────┘
                        │
@@ -422,3 +422,13 @@ For each Terraform state, follow this consistent process:
 2. **Engage** HashiCorp for guidance and validation
 3. **Schedule** migration kickoff meeting
 4. **Establish** monthly checkpoints for progress tracking and risk review
+
+---
+
+## Summary Statement
+
+This migration addresses a known and growing operational risk around Terraform state consistency while modernizing governance, security, and auditability. By using a phased, low-risk approach with targeted HashiCorp involvement, Metrolinx can adopt Terraform Cloud as a stable enterprise platform without disrupting day-to-day engineering workflows.
+
+---
+
+## Questions?
