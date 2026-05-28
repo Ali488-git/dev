@@ -55,26 +55,26 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│                      Developer Commits Code                          │
-│                                                                       │
+│                                                                     │
+│                      Developer Commits Code                         │
+│                                                                     │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│                   GitHub Actions Triggered                           │
-│              (push or pull request event)                            │
-│                                                                       │
+│                                                                     │
+│                   GitHub Actions Triggered                          │
+│              (push or pull request event)                           │
+│                                                                     │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│            Terraform Validate & Format Check                         │
-│              • terraform fmt                                         │
-│              • terraform validate                                    │
-│                                                                       │
+│                                                                     │
+│            Terraform Validate & Format Check                        │
+│              • terraform fmt                                        │
+│              • terraform validate                                   │
+│                                                                     │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
@@ -83,26 +83,26 @@
                         │ Successful?  │
                         └─┬──────────┬─┘
                    No  ┌──┘          └──┐  Yes
-                       │                 │
-                       ▼                 ▼
+                       │                │
+                       ▼                ▼
               ┌─────────────────┐  ┌──────────────────────┐
               │  Fail & Notify  │  │ Terraform Plan       │
               └─────────────────┘  └──────────┬───────────┘
-                                             │
-                                             ▼
+                                              │
+                                              ▼
                         ┌─────────────────────────────────┐
                         │   PR Review & Approval          │
                         │   (manual approval required)    │
                         └──────────────┬──────────────────┘
-                                      │
-                                      ▼
+                                       │
+                                       ▼
                         ┌─────────────────────────────────┐
                         │   Terraform Apply               │
                         │   (via GitHub Actions)          │
                         │   Updates Azure Storage State   │
                         └──────────────┬──────────────────┘
-                                      │
-                                      ▼
+                                       │
+                                       ▼
                         ┌─────────────────────────────────┐
                         │   Resource Provisioned in Azure │
                         │   State stored in Azure Storage │
@@ -115,24 +115,24 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│            User Creates ServiceNow Ticket                            │
-│                  (VM Request Details)                                │
-│                                                                       │
+│                                                                     │
+│            User Creates ServiceNow Ticket                           │
+│                  (VM Request Details)                               │
+│                                                                     │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│              Manager Approval Required                               │
-│                                                                       │
+│                                                                     │
+│              Manager Approval Required                              │
+│                                                                     │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│              Cloud OPS Validates Request                             │
-│                                                                       │
+│                                                                     │
+│              Cloud OPS Validates Request                            │
+│                                                                     │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
@@ -141,18 +141,18 @@
                         │   Valid?     │
                         └─┬──────────┬─┘
                    No  ┌──┘          └──┐  Yes
-                       │                 │
-                       ▼                 ▼
+                       │                │
+                       ▼                ▼
               ┌─────────────────┐  ┌──────────────────────┐
               │Reject & Notify  │  │ Payload → Ansible    │
               └─────────────────┘  └──────────┬───────────┘
-                                             │
-                                             ▼
+                                              │
+                                              ▼
                         ┌─────────────────────────────────┐
                         │   Ansible Validates Payload     │
                         └──────────────┬──────────────────┘
-                                      │
-                                      ▼
+                                       │
+                                       ▼
                         ┌─────────────────────────────────┐
                         │   TFC API Triggered             │
                         │   (Terraform Plan)              │
@@ -167,11 +167,11 @@
               │ SNOW Task Close │  │ Review & Approve Apply   │
               │ (with comment)  │  │ (Cloud OPS approval)     │
               └─────────────────┘  └──────────┬───────────────┘
-                                             │
-                                             ▼
+                                              │
+                                              ▼
                         ┌─────────────────────────────────┐
                         │   Resource Provisioned in Azure │
-                        │   State centralized in TFC       │
+                        │   State centralized in TFC      │
                         └─────────────────────────────────┘
 ```
 
