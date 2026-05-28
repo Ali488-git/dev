@@ -22,7 +22,6 @@
 | **Azure Products IaC** | [metrolinx/Azure-products-IaC](https://github.com/metrolinx/Azure-products-IaC) | In Scope | Mixed (Azure Storage + TFC) | P1 | Dev workspace for the team. Products/workloads; split state detected; some Terraform Cloud already in use |
 | **AZ Policy Repo** | [metrolinx/az-policy-repo](https://github.com/metrolinx/az-policy-repo) | In Scope | Azure Storage (Templated) | P2 | Azure policy definitions. Policy-as-Code; management group scope |
 | **Ansible Terraform Integration** | [metrolinx/Ansible-Terraform-Integration](https://github.com/metrolinx/Ansible-Terraform-Integration) | In Scope | Azure Storage (Templated) | P2 | Ansible playbooks for infrastructure orchestration and integration with Terraform |
-| **Ansible Terraform Cloud Integration** | [metrolinx/Ansible-TerraformCloud-Integration](https://github.com/metrolinx/Ansible-TerraformCloud-Integration) | In Scope | Terraform Cloud (Remote) | P3 | Ansible playbooks for automatic Terraform Cloud resource provisioning for ServiceNow tickets |
 
 ---
 
@@ -57,186 +56,126 @@
 ## Current Workflow with GitHub Actions
 
 ```
-                                    ┌─────────────┐
-                                    │    START    │
-                                    └──────┬──────┘
-                                           │
-                                           ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Developer commits Terraform code to GitHub     │
-    │   (Feature branch or direct to main)             │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   GitHub Actions Workflow Triggered              │
-    │   - Runs on push/pull request events             │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Terraform Validate & Format Check              │
-    │   - terraform fmt                                │
-    │   - terraform validate                           │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-                   ◇─────────◇
-                  ╱           ╲
-                 ╱  Validation ╲
-                ╱   Successful?  ╲
-               ◇                  ◇
-               │ No           Yes │
-               │                  │
-               └─────┬────────────┘
-                     │
-                     ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Terraform Plan                                 │
-    │   - Generates execution plan                     │
-    │   - Stores plan artifact                         │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   PR Review & Approval (if PR workflow)           │
-    │   - Team reviews changes                         │
-    │   - Manual approval required                     │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Terraform Apply via GitHub Actions             │
-    │   - Applies plan to Azure                        │
-    │   - Updates Azure Storage state file             │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Resource provisioned in Azure                  │
-    │   - State stored in Azure Storage Account        │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-                   ◇─────────◇
-                   │    END    │
-                   └─────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│                      Developer Commits Code                          │
+│                                                                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│                   GitHub Actions Triggered                           │
+│              (push or pull request event)                            │
+│                                                                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│            Terraform Validate & Format Check                         │
+│              • terraform fmt                                         │
+│              • terraform validate                                    │
+│                                                                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+                        ┌──────────────┐
+                        │  Validation  │
+                        │ Successful?  │
+                        └─┬──────────┬─┘
+                   No  ┌──┘          └──┐  Yes
+                       │                 │
+                       ▼                 ▼
+              ┌─────────────────┐  ┌──────────────────────┐
+              │  Fail & Notify  │  │ Terraform Plan       │
+              └─────────────────┘  └──────────┬───────────┘
+                                             │
+                                             ▼
+                        ┌─────────────────────────────────┐
+                        │   PR Review & Approval          │
+                        │   (manual approval required)    │
+                        └──────────────┬──────────────────┘
+                                      │
+                                      ▼
+                        ┌─────────────────────────────────┐
+                        │   Terraform Apply               │
+                        │   (via GitHub Actions)          │
+                        │   Updates Azure Storage State   │
+                        └──────────────┬──────────────────┘
+                                      │
+                                      ▼
+                        ┌─────────────────────────────────┐
+                        │   Resource Provisioned in Azure │
+                        │   State stored in Azure Storage │
+                        └─────────────────────────────────┘
 ```
-
-### Current Workflow Characteristics
-
-| Aspect | Details |
-|---|---|
-| **Trigger** | Developer push or pull request to GitHub repository |
-| **Validation** | Terraform fmt, validate, and plan stages |
-| **Approval Process** | GitHub PR reviews and manual approval before apply |
-| **Execution** | GitHub Actions runner executes Terraform apply |
-| **State Management** | Stored in Azure Storage Account (templated) |
-| **Integration** | Direct Git to Azure, no external CI/CD platform |
-| **Scaling** | Limited concurrent runs, runner resource constraints |
-| **Limitations** | No centralized workspace management, state management complexity with 24-30 workspaces |
 
 ---
 
 ## Ideal Workflow (Target State with Terraform Cloud)
 
 ```
-                                    ┌─────────────┐
-                                    │    START    │
-                                    └──────┬──────┘
-                                           │
-                                           ▼
-    ┌──────────────────────────────────────────────────┐
-    │   User enters the details of VM in ServiceNow    │
-    │                                                  │
-    │  ◄─────── Reject the ticket with reason ◄──────┐
-    │                                                  │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Approval from Requestor's Manager             │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Cloud OPS Validates the Request                │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-                   ◇─────────◇
-                  ╱           ╲
-                 ╱   Valid?    ╲
-                ╱               ╲
-               ◇                 ◇
-               │ No          Yes │
-               │                 │
-               └─────────┬────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Payload sent to Ansible                        │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Validate the payload                           │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Job Trigger in Ansible via REST API            │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   TFC API triggered from Ansible with            │
-    │   the necessary payload                          │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-                   ◇─────────────◇
-                  ╱               ╲
-                 ╱   Plan         ╲
-                ╱   Succeeded?     ╲
-               ◇                    ◇
-               │ Yes            No │
-               │                    │
-               ├─────┬─────────────┘
-               │     │
-               │     ▼
-               │  ┌──────────────────────────────────┐
-               │  │  SNOW Task closes with comment   │
-               │  └──────────────────────────────────┘
-               │
-               ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Review and Approve Apply CI/Cloud OPS          │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-    ┌──────────────────────────────────────────────────┐
-    │   Resource provisioned in Azure                  │
-    └──────────────────┬───────────────────────────────┘
-                       │
-                       ▼
-                   ◇─────────────◇
-                   │    STOP     │
-                   └─────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│            User Creates ServiceNow Ticket                            │
+│                  (VM Request Details)                                │
+│                                                                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│              Manager Approval Required                               │
+│                                                                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│              Cloud OPS Validates Request                             │
+│                                                                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+                        ┌──────────────┐
+                        │   Request    │
+                        │   Valid?     │
+                        └─┬──────────┬─┘
+                   No  ┌──┘          └──┐  Yes
+                       │                 │
+                       ▼                 ▼
+              ┌─────────────────┐  ┌──────────────────────┐
+              │Reject & Notify  │  │ Payload → Ansible    │
+              └─────────────────┘  └──────────┬───────────┘
+                                             │
+                                             ▼
+                        ┌─���───────────────────────────────┐
+                        │   Ansible Validates Payload     │
+                        └──────────────┬──────────────────┘
+                                      │
+                                      ▼
+                        ┌─────────────────────────────────┐
+                        │   TFC API Triggered             │
+                        │   (Terraform Plan)              │
+                        └──────────────┬──────────────────┘
+                                      │
+                        ┌─────────────┴──────────────┐
+                        │                            │
+                   Plan Failed              Plan Succeeded
+                        │                            │
+                        ▼                            ▼
+              ┌─────────────────┐  ┌──────────────────────────┐
+              │ SNOW Task Close │  │ Review & Approve Apply   │
+              │ (with comment)  │  │ (Cloud OPS approval)     │
+              └─────────────────┘  └──────────┬───────────────┘
+                                             │
+                                             ▼
+                        ┌─────────────────────────────────┐
+                        │   Resource Provisioned in Azure │
+                        │   State centralized in TFC       │
+                        └─────────────────────────────────┘
 ```
-
-### Ideal Workflow Characteristics (Target State)
-
-| Aspect | Details |
-|---|---|
-| **Trigger** | ServiceNow ticket creation with VM specifications |
-| **Validation** | Cloud OPS manual validation + Ansible payload validation |
-| **Approval Process** | Manager approval + Cloud OPS approval + TFC plan review + Apply approval |
-| **Execution** | Terraform Cloud API execution via Ansible orchestration |
-| **State Management** | Centralized in Terraform Cloud (remote backend) |
-| **Integration** | ServiceNow → Ansible → Terraform Cloud → Azure (end-to-end automation) |
-| **Scaling** | Unlimited concurrent runs, enterprise-grade state locking |
-| **Benefits** | Centralized workspace management, enhanced collaboration, audit trails, cost estimation |
 
 ---
 
@@ -277,7 +216,7 @@ Metrolinx is planning a phased migration of Terraform execution from GitHub Acti
 - **Azure IaC** - Primary monorepo (heavy lift)
 - **Azure Products IaC** - Experiencing split state issues (primary pain point)
 - **AZ Policy Repo** - Lighter lift for policy definitions
-- **Ansible–TerraformCloud-Integration** - Already using TFC, needs standardization
+- **Ansible–Terraform-Integration** - Ansible orchestration playbooks
 
 ### The Core Problem: Split Terraform State
 
