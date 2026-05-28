@@ -210,7 +210,7 @@
                │  └──────────────────────────────────┘
                │
                ▼
-    ┌──────────────────────────────────────────────────┐
+    ┌─────────��────────────────────────────────────────┐
     │   Review and Approve Apply CI/Cloud OPS          │
     └──────────────────┬───────────────────────────────┘
                        │
@@ -297,9 +297,9 @@ A primary driver for this migration is the current **split state model**:
 
 ### Migration Approach
 
-The migration will be delivered in **controlled phases** to minimize risk, with targeted involvement from a certified **HashiCorp partner** during the early stages to ensure alignment with current HashiCorp Validated Designs and best practices.
+The migration will be delivered in **controlled phases** to minimize risk, with targeted involvement from **HashiCorp** during the early stages to ensure alignment with current HashiCorp Validated Designs and best practices.
 
-- **Partner engagement**: Primarily during Phase 0 and Phase 1
+- **HashiCorp engagement**: Primarily during Phase 0 and Phase 1
 - **Provides**: Validation, guidance, and initial enablement
 - **Reduces**: Architectural risk while ensuring internal ownership and knowledge transfer
 
@@ -315,7 +315,7 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Identify current backends, variables, and secrets
 - Map each existing state to a future Terraform Cloud workspace
 
-**Partner Responsibilities:**
+**HashiCorp Responsibilities:**
 - Review current Terraform execution model and backend usage
 - Validate state architecture and proposed workspace mapping strategy
 - Identify gaps or changes in recommended practices
@@ -333,7 +333,7 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Migrate existing Terraform state using Terraform CLI (one-time operation)
 - Validate clean plans and expected behavior post-migration
 
-**Partner Responsibilities:**
+**HashiCorp Responsibilities:**
 - Assist with TFC organization setup
 - Configure or validate:
   - SSO integration
@@ -419,6 +419,6 @@ For each Terraform state, follow this consistent process:
 
 ### Next Steps
 1. **Approve** this migration plan
-2. **Engage** a HashiCorp partner for guidance and validation
+2. **Engage** HashiCorp for guidance and validation
 3. **Schedule** migration kickoff meeting
 4. **Establish** monthly checkpoints for progress tracking and risk review
