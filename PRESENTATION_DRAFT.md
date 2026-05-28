@@ -19,9 +19,7 @@
 | Repository | Link | Status | Backend Type | Priority | Description |
 |---|---|---|---|---|---|
 | **Azure IaC** | [metrolinx/Azure-IaC](https://github.com/metrolinx/Azure-IaC) | In Scope | Azure Storage (Templated) | P1 | Main repository for Dev, SIT, UAT, Prod Terraform code and GitHub Actions deployment pipeline. Shared infrastructure; multi-environment; 60+ workload directories |
-| **Azure Products IaC** | [metrolinx/Azure-products-IaC](https://github.com/metrolinx/Azure-products-IaC) | In Scope | Mixed (Azure Storage + TFC) | P1 | Dev workspace for the team. Products/workloads; split state detected; some Terraform Cloud already in use |
 | **AZ Policy Repo** | [metrolinx/az-policy-repo](https://github.com/metrolinx/az-policy-repo) | In Scope | Azure Storage (Templated) | P2 | Azure policy definitions. Policy-as-Code; management group scope |
-| **Ansible Terraform Integration** | [metrolinx/Ansible-Terraform-Integration](https://github.com/metrolinx/Ansible-Terraform-Integration) | In Scope | Azure Storage (Templated) | P2 | Ansible playbooks for infrastructure orchestration and integration with Terraform |
 
 ---
 
@@ -150,7 +148,7 @@
               └─────────────────┘  └──────────┬───────────┘
                                              │
                                              ▼
-                        ┌─���───────────────────────────────┐
+                        ┌─────────────────────────────────┐
                         │   Ansible Validates Payload     │
                         └──────────────┬──────────────────┘
                                       │
@@ -201,7 +199,7 @@
 ### Overview
 Metrolinx is planning a phased migration of Terraform execution from GitHub Actions to HCP Terraform (Terraform Cloud). The goal is to establish Terraform Cloud as the single, authoritative platform for Terraform execution, state management, approvals, and auditability.
 
-> **Note**: This is a **re-platforming of Terraform operations, not a redesign of Azure infrastructure**. Existing environments, Terraform code, GitHub repositories, and Ansible workflows remain largely unchanged.
+> **Note**: This is a **re-platforming of Terraform operations, not a redesign of Azure infrastructure**. Existing environments, Terraform code, GitHub repositories, and existing workflows remain largely unchanged.
 
 ### Key Outcomes
 - **Centralized Terraform state and execution** - Single source of truth for all infrastructure state
@@ -214,25 +212,7 @@ Metrolinx is planning a phased migration of Terraform execution from GitHub Acti
 
 ### In Scope
 - **Azure IaC** - Primary monorepo (heavy lift)
-- **Azure Products IaC** - Experiencing split state issues (primary pain point)
 - **AZ Policy Repo** - Lighter lift for policy definitions
-- **Ansible–Terraform-Integration** - Ansible orchestration playbooks
-
-### The Core Problem: Split Terraform State
-
-A primary driver for this migration is the current **split state model**:
-
-- Resources managed via Terraform Cloud store state in Terraform Cloud
-- Pre-existing or legacy resources retain state in Azure Storage
-- This creates **partial state ownership** where different attributes of the same resource are tracked in different backends
-
-**Consequences of split state:**
-- Increased configuration drift
-- Inconsistent execution behavior
-- Harder troubleshooting and audits
-- Long-term operational risk
-
-**Migration objective**: Move all active Terraform state into Terraform Cloud so each workspace becomes the single system of record, eliminating partial state ownership.
 
 ### Migration Approach
 
