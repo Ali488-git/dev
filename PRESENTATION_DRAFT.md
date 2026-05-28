@@ -51,3 +51,109 @@
 | it-sub-prd-001 | data.azurerm_subscriptions.infraprd | Production workloads | prd |
 | it-sub-prddmz-001 | data.azurerm_subscriptions.infraprddmz | Production DMZ | prd |
 | it-sub-sbox-cloudteam-001 | data.azurerm_subscriptions.sbox | Sandbox/testing | sbox |
+
+---
+
+## Ideal Workflow for Infrastructure Provisioning
+
+```
+                                    ┌─────────────┐
+                                    │    START    │
+                                    └──────┬──────┘
+                                           │
+                                           ▼
+    ┌──────────────────────────────────────────────────┐
+    │   User enters the details of VM in ServiceNow    │
+    │                                                  │
+    │  ◄─────── Reject the ticket with reason ◄──────┐
+    │                                                  │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Approval from Requestor's Manager             │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Cloud OPS Validates the Request                │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+                   ◇─────────◇
+                  ╱           ╲
+                 ╱   Valid?    ╲
+                ╱               ╲
+               ◇                 ◇
+               │ No          Yes │
+               │                 │
+               └─────────┬────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Payload sent to Ansible                        │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Validate the payload                           │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Job Trigger in Ansible via REST API            │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   TFC API triggered from Ansible with            │
+    │   the necessary payload                          │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+                   ◇─────────────◇
+                  ╱               ╲
+                 ╱   Plan         ╲
+                ╱   Succeeded?     ╲
+               ◇                    ◇
+               │ Yes            No │
+               │                    │
+               ├─────┬─────────────┘
+               │     │
+               │     ▼
+               │  ┌──────────────────────────────────┐
+               │  │  SNOW Task closes with comment   │
+               │  └──────────────────────────────────┘
+               │
+               ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Review and Approve Apply CI/Cloud OPS          │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+    ┌──────────────────────────────────────────────────┐
+    │   Resource provisioned in Azure                  │
+    └──────────────────┬───────────────────────────────┘
+                       │
+                       ▼
+                   ◇─────────────◇
+                   │    STOP     │
+                   └─────────────┘
+```
+
+### Workflow Stages
+
+| Stage | Description |
+|---|---|
+| **ServiceNow** | User initiates VM provisioning request with detailed specifications |
+| **Ansible** | Validates payload and triggers Terraform Cloud API via REST |
+| **Terraform Cloud (TFC)** | Executes plan and applies infrastructure changes |
+| **Azure** | Resources are provisioned and configured in the target subscription |
+
+### Key Features
+
+- **Approval Gates**: Manager and Cloud OPS validation ensure compliance
+- **Automated Validation**: Ansible validates payloads before TFC execution
+- **ServiceNow Integration**: Automated task updates with plan results
+- **Approval Workflow**: TFC plan approval required before resource deployment
+- **Audit Trail**: Full visibility across all stages from request to deployment
