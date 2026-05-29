@@ -51,30 +51,51 @@
 
 ---
 
+## What Will and Will Not Change
+
+### Largely Unchanged
+- **Terraform code structure** - Existing patterns and modularity preserved
+- **GitHub repositories and PR workflow** - Source control practices remain the same
+- **Azure infrastructure** - No redesign of cloud architecture
+- **State boundaries** - Logical resource groupings maintained
+- **Ansible usage** - Continues for OS and application configuration
+
+### Changing
+- **Terraform execution platform** - GitHub Actions → Terraform Cloud
+- **State backend location** - Azure Storage → Terraform Cloud
+- **Credential and secret handling** - GitHub Secrets → TFC Variables (encrypted in TFC)
+- **Variable management model** - Runtime injection → Declarative TFC Variables
+- **Access control and approval workflows** - GitHub PR reviews → TFC + CloudOps approvals
+- **Platform operations and governance** - Centralized visibility and audit trails
+
+**Why This Matters**: This balance ensures minimal disruption while delivering meaningful control improvements, security enhancements, and operational visibility.
+
+---
+
 ## Current Workflow with GitHub Actions
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│                      Developer Commits Code                         │
-│                                                                     │
+│                                                                       │
+│                      Developer Commits Code                          │
+│                                                                       │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│                   GitHub Actions Triggered                          │
-│              (push or pull request event)                           │
-│                                                                     │
+│                                                                       │
+│                   GitHub Actions Triggered                           │
+│              (push or pull request event)                            │
+│                                                                       │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│            Terraform Validate & Format Check                        │
-│              • terraform fmt                                        │
-│              • terraform validate                                   │
-│                                                                     │
+│                                                                       │
+│            Terraform Validate & Format Check                         │
+│              • terraform fmt                                         │
+│              • terraform validate                                    │
+│                                                                       │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
@@ -83,26 +104,26 @@
                         │ Successful?  │
                         └─┬──────────┬─┘
                    No  ┌──┘          └──┐  Yes
-                       │                │
-                       ▼                ▼
+                       │                 │
+                       ▼                 ▼
               ┌─────────────────┐  ┌──────────────────────┐
               │  Fail & Notify  │  │ Terraform Plan       │
               └─────────────────┘  └──────────┬───────────┘
-                                              │
-                                              ▼
+                                             │
+                                             ▼
                         ┌─────────────────────────────────┐
                         │   PR Review & Approval          │
                         │   (manual approval required)    │
                         └──────────────┬──────────────────┘
-                                       │
-                                       ▼
+                                      │
+                                      ▼
                         ┌─────────────────────────────────┐
                         │   Terraform Apply               │
                         │   (via GitHub Actions)          │
                         │   Updates Azure Storage State   │
                         └──────────────┬──────────────────┘
-                                       │
-                                       ▼
+                                      │
+                                      ▼
                         ┌─────────────────────────────────┐
                         │   Resource Provisioned in Azure │
                         │   State stored in Azure Storage │
@@ -115,24 +136,24 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│            User Creates ServiceNow Ticket                           │
-│                  (VM Request Details)                               │
-│                                                                     │
+│                                                                       │
+│            User Creates ServiceNow Ticket                            │
+│                  (VM Request Details)                                │
+│                                                                       │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│              Manager Approval Required                              │
-│                                                                     │
+│                                                                       │
+│              Manager Approval Required                               │
+│                                                                       │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│              Cloud OPS Validates Request                            │
-│                                                                     │
+│                                                                       │
+│              Cloud OPS Validates Request                             │
+│                                                                       │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
@@ -141,18 +162,18 @@
                         │   Valid?     │
                         └─┬──────────┬─┘
                    No  ┌──┘          └──┐  Yes
-                       │                │
-                       ▼                ▼
+                       │                 │
+                       ▼                 ▼
               ┌─────────────────┐  ┌──────────────────────┐
               │Reject & Notify  │  │ Payload → Ansible    │
               └─────────────────┘  └──────────┬───────────┘
-                                              │
-                                              ▼
+                                             │
+                                             ▼
                         ┌─────────────────────────────────┐
                         │   Ansible Validates Payload     │
                         └──────────────┬──────────────────┘
-                                       │
-                                       ▼
+                                      │
+                                      ▼
                         ┌─────────────────────────────────┐
                         │   TFC API Triggered             │
                         │   (Terraform Plan)              │
@@ -167,11 +188,11 @@
               │ SNOW Task Close │  │ Review & Approve Apply   │
               │ (with comment)  │  │ (Cloud OPS approval)     │
               └─────────────────┘  └──────────┬───────────────┘
-                                              │
-                                              ▼
+                                             │
+                                             ▼
                         ┌─────────────────────────────────┐
                         │   Resource Provisioned in Azure │
-                        │   State centralized in TFC      │
+                        │   State centralized in TFC       │
                         └─────────────────────────────────┘
 ```
 
@@ -214,6 +235,17 @@ Metrolinx is planning a phased migration of Terraform execution from GitHub Acti
 - **Azure IaC** - Primary monorepo (heavy lift)
 - **AZ Policy Repo** - Lighter lift for policy definitions
 
+### Workspace Strategy: Addressing the 60+ Workload Directories
+
+**Challenge**: Azure-IaC contains 60+ workload directories. A naive mapping (1 directory = 1 workspace × 4 environments) would create 240+ workspaces—unmanageable at scale.
+
+**Solution**: Workspace consolidation strategy (to be validated with HashiCorp)
+- **Option A**: Group related workloads by function/team → ~24-30 workspaces per environment (more manageable)
+- **Option B**: Consolidated state per environment → 4 workspaces total (simpler but less granular)
+- **Option C**: Hybrid approach → Balance granularity with manageability
+
+**HashiCorp will help determine optimal workspace structure** during Phase 0 to ensure scalability without operational overhead.
+
 ### Migration Approach
 
 The migration will be delivered in **controlled phases** to minimize risk, with targeted involvement from **HashiCorp** during the early stages to ensure alignment with current HashiCorp Validated Designs and best practices.
@@ -226,31 +258,35 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 
 ## Migration Phases & Execution Plan
 
-### Phase 0 – Discovery & Validation
+### Phase 0 – Discovery & Validation (Weeks 1-3)
 **Objective**: Map current infrastructure and validate migration strategy
 
 **Internal Activities:**
 - Inventory all Terraform states and repositories
 - Identify current backends, variables, and secrets
+- Determine optimal workspace mapping for 60+ workload directories
 - Map each existing state to a future Terraform Cloud workspace
 
 **HashiCorp Responsibilities:**
 - Review current Terraform execution model and backend usage
 - Validate state architecture and proposed workspace mapping strategy
+- Recommend optimal workspace consolidation approach
 - Identify gaps or changes in recommended practices
 
-**Outcome**: Clear inventory and validated migration roadmap
+**Outcome**: Clear inventory, validated migration roadmap, and workspace strategy defined
 
 ---
 
-### Phase 1 – Foundation & Initial Migration
+### Phase 1 – Foundation & Initial Migration (Weeks 4-9)
 **Objective**: Establish Terraform Cloud platform and execute initial state migrations
 
 **Internal Activities:**
 - Configure TFC organization, teams, and permissions
 - Create Terraform Cloud control repository for platform configuration as code
 - Migrate existing Terraform state using Terraform CLI (one-time operation)
+- Execute dry-runs for non-production workspaces
 - Validate clean plans and expected behavior post-migration
+- Document migration procedures and troubleshooting guides
 
 **HashiCorp Responsibilities:**
 - Assist with TFC organization setup
@@ -260,25 +296,43 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
   - VCS connections and execution modes
 - Support creation and review of Terraform Cloud control repository
 - Provide guided oversight during initial state migrations
+- Review dry-run results and approve go-live procedures
 
-**Outcome**: Terraform Cloud platform operational; first state migrations validated
+**Outcome**: Terraform Cloud platform operational; first state migrations validated; runbook documented
 
 ---
 
-### Phase 2 – Pilot and Scale
+### Phase 2 – Pilot and Scale (Weeks 10-15)
 **Objective**: Establish repeatable migration process and expand across environments
 
 **Activities:**
-- Migrate low-risk non-production workspace first
-- Document repeatable migration runbook
-- Migrate remaining environments in risk-based waves
-- **Production environments migrated last**
+- Migrate low-risk non-production workspace first (Dev environment)
+- Document repeatable migration runbook and lessons learned
+- Migrate SIT environment
+- Migrate UAT environment
+- Validate approval workflows work end-to-end
+- **Production environments migrated last (Phase 3)**
 
-**Outcome**: Standardized migration process; most non-prod environments in TFC
+**Outcome**: Standardized migration process proven; most non-prod environments in TFC
 
 ---
 
-### Phase 3 – Stabilization
+### Phase 3 – Production Migration (Weeks 16-21)
+**Objective**: Migrate production environments with highest care and contingency
+
+**Activities:**
+- Conduct comprehensive backup of all production states
+- Execute full production dry-run with rollback plan ready
+- Migrate production workspaces in waves
+- Maintain GitHub Actions as active fallback during cutover
+- Comprehensive monitoring and validation post-cutover
+- Gradual traffic cutover with instant rollback capability
+
+**Outcome**: Production migrated with zero downtime; rollback tested and proven
+
+---
+
+### Phase 4 – Stabilization (Weeks 22-26)
 **Objective**: Clean up legacy systems and formalize operations
 
 **Activities:**
@@ -286,12 +340,13 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Remove old backend references and Azure Storage dependencies
 - Normalize variables, naming, and access controls
 - Formalize operating and support model
+- Complete team training and knowledge transfer
 
-**Outcome**: Single source of truth (TFC); legacy systems retired
+**Outcome**: Single source of truth (TFC); legacy systems retired; team self-sufficient
 
 ---
 
-### Phase 4 – Optimization (Optional, Future)
+### Phase 5 – Optimization (Weeks 27+, Optional)
 **Objective**: Enable advanced capabilities for future growth
 
 **Potential Enhancements:**
@@ -304,16 +359,104 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 
 ---
 
+## Timeline with Milestones
+
+| Milestone | Target Week | Status |
+|---|---|---|
+| **Phase 0 Complete** - Workspace strategy defined | Week 3 | Discovery gate |
+| **Phase 1 Complete** - TFC operational, dry-runs successful | Week 9 | Go-live approval gate |
+| **Dev Environment Live** - First non-prod in production | Week 11 | Confidence checkpoint |
+| **SIT + UAT Complete** - All non-prod migrated | Week 15 | Production readiness gate |
+| **Production Live** - All environments migrated | Week 21 | Mission-critical gate |
+| **Legacy Cleanup Complete** - Azure Storage backend retired | Week 26 | Completion gate |
+| **Total Duration** | **~6 months** | On track |
+
+---
+
+## Effort Justification & Estimation
+
+### Why This Investment?
+1. **Operational Risk Reduction** - Centralized state eliminates fragmentation issues
+2. **Security Posture** - Encrypted secrets management and audit trails
+3. **Scalability** - Enterprise-grade platform for growth
+4. **Compliance** - Better governance and auditability
+5. **Team Efficiency** - Reduced manual ticket tracking and approvals
+
+### Effort Breakdown
+
+| Phase | Activity | Effort | Owner |
+|---|---|---|---|
+| **Phase 0** | Discovery & architecture validation | 80 hours | Internal + HashiCorp |
+| **Phase 1** | TFC setup, control repo, dry-runs | 160 hours | Internal + HashiCorp |
+| **Phase 2** | Non-prod migrations (3 environments) | 120 hours | Internal |
+| **Phase 3** | Production migration + validation | 100 hours | Internal |
+| **Phase 4** | Cleanup, training, documentation | 80 hours | Internal |
+| **Phase 5** | Optimization (optional) | 40 hours | Internal |
+| **Total** | **~580-600 hours over 6 months** | **~1.5 FTE** | Team + Partner |
+
+**Cost-Benefit**: 600 hours upfront investment eliminates ongoing operational complexity, reduces incident response time (hours → minutes), and enables future self-service platform capabilities.
+
+---
+
+## Rollback / Contingency Plan
+
+### Why Rollback Capability Matters
+If critical issues arise during migration, we need the ability to quickly revert to GitHub Actions without data loss or extended downtime.
+
+### Rollback Strategy
+
+**Pre-Migration Safeguards**:
+1. **Full State Backup** - All Azure Storage states backed up before migration
+2. **TFC State Export** - Export all TFC states as backups
+3. **Parallel Running** - GitHub Actions workflow remains operational during transition
+4. **Dry-Run Validation** - Each workspace migrated in dry-run mode before cutover
+
+**Rollback Procedures by Phase**:
+
+| Phase | Rollback Trigger | Time to Rollback | Procedure |
+|---|---|---|---|
+| **Phase 1** | TFC setup issues | Immediate (same day) | Stop using TFC; resume GitHub Actions |
+| **Phase 2** | Non-prod failures | Within 1 hour | Restore state from backup; resume GitHub Actions |
+| **Phase 3** | Production issues | Within 15 minutes | Execute instant failover to GitHub Actions; investigate offline |
+| **Post-Migration** | Critical bug discovered | Possible (manual process) | Restore specific workspace state from backup |
+
+**Rollback Execution**:
+- GitHub Actions workflows remain in version control and ready to activate
+- Terraform state files retained in Azure Storage for 30 days post-migration
+- Clear procedures documented for each service team
+- On-call escalation plan for production incidents
+
+**Data Loss Prevention**:
+- All state migrations are additive (never destructive)
+- Backup retention: 90 days minimum
+- Version control backups: All TFC state exports retained in Git history
+
+### Contingency Scenarios
+
+| Scenario | Response | Prevention |
+|---|---|---|
+| **TFC authentication fails** | Revert to GitHub Actions immediately | SSO testing in Phase 1 |
+| **State migration corruption** | Restore from backup; retry migration | Dry-run validation per workspace |
+| **Approval workflow bottleneck** | Bypass TFC temporarily; use GitHub | User training and workflow tuning |
+| **Variable management issues** | Revert to env vars in GitHub Actions | Comprehensive variable audit in Phase 0 |
+| **Production performance degradation** | Instant failover; investigate offline | Load testing in Phase 2 |
+
+---
+
 ## Terraform State Migration Principle
 
 For each Terraform state, follow this consistent process:
 
 1. **Create** a corresponding Terraform Cloud workspace
 2. **Associate** it with the correct code path (Git repo and directory)
-3. **Migrate** state using Terraform CLI (one-time activity)
-4. **Validate** with a clean plan to ensure no unexpected changes
+3. **Validate** workspace configuration (variables, integrations, permissions)
+4. **Dry-run** migration with full test plan
+5. **Migrate** state using Terraform CLI (one-time activity)
+6. **Validate** with a clean plan to ensure no unexpected changes
+7. **Cutover** with rollback plan ready
+8. **Verify** post-migration for 7 days before declaring success
 
-> **Critical**: After migration, Terraform Cloud becomes the authoritative source for execution and state. There is no fallback to distributed backends.
+> **Critical**: After migration, Terraform Cloud becomes the authoritative source for execution and state. Azure Storage backups retained for contingency only.
 
 ---
 
@@ -326,27 +469,15 @@ For each Terraform state, follow this consistent process:
 | **Over-permissive access** | SSO-based least privilege access model with team-based RBAC |
 | **Environment inconsistency** | Enforced naming standards and workspace configuration standards |
 | **Over-engineering early phases** | Keep early phases minimal; focus on core functionality before optimization |
-
----
-
-## Timeline and Next Steps
-
-### Timeline
-- **Foundation & migration**: 8–12 weeks
-- **Optimization and maturity**: 12–16 weeks
-- **Total duration**: ~5–7 months
-
-### Next Steps
-1. **Approve** this migration plan
-2. **Engage** HashiCorp for guidance and validation
-3. **Schedule** migration kickoff meeting
-4. **Establish** monthly checkpoints for progress tracking and risk review
+| **Production downtime** | Parallel running capability; instant rollback to GitHub Actions |
+| **State corruption** | Comprehensive backup strategy; dry-run validation before cutover |
+| **User adoption resistance** | Training program; clear documentation; support on-call team |
 
 ---
 
 ## Summary Statement
 
-This migration addresses a known and growing operational risk around Terraform state consistency while modernizing governance, security, and auditability. By using a phased, low-risk approach with targeted HashiCorp involvement, Metrolinx can adopt Terraform Cloud as a stable enterprise platform without disrupting day-to-day engineering workflows.
+This migration addresses a known and growing operational risk around Terraform state consistency while modernizing governance, security, and auditability. By using a phased, low-risk approach with targeted HashiCorp involvement and comprehensive contingency planning, Metrolinx can adopt Terraform Cloud as a stable enterprise platform without disrupting day-to-day engineering workflows. The investment of ~600 hours over 6 months delivers immediate operational improvements and enables future self-service capabilities.
 
 ---
 
