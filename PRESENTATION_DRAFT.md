@@ -20,12 +20,26 @@
 |---|---|---|---|---|---|
 | **Azure IaC** | [metrolinx/Azure-IaC](https://github.com/metrolinx/Azure-IaC) | In Scope | Azure Storage (Templated) | P1 | Main repository for Dev, SIT, UAT, Prod Terraform code and GitHub Actions deployment pipeline. Shared infrastructure; multi-environment; 60+ workload directories |
 | **AZ Policy Repo** | [metrolinx/az-policy-repo](https://github.com/metrolinx/az-policy-repo) | In Scope | Azure Storage (Templated) | P2 | Azure policy definitions. Policy-as-Code; management group scope |
+| **Azure Products IaC** | [metrolinx/Azure-products-IaC](https://github.com/metrolinx/Azure-products-IaC) | Out of Scope | Terraform Cloud | P3 | Dev workspace for the team. Products and workload-specific deployments. Already migrated to TFC |
+| **Ansible Terraform Cloud Integration** | [metrolinx/Ansible-TerraformCloud-Integration](https://github.com/metrolinx/Ansible-TerraformCloud-Integration) | Out of Scope | Terraform Cloud | P3 | Ansible playbooks for automatic Terraform Cloud resource provisioning for ServiceNow tickets. Existing TFC integration already operational |
 
 ---
 
 ## Terraform Cloud
 
 **Link**: [app.terraform.io/app/metrolinx/workspaces](https://app.terraform.io/app/metrolinx/workspaces)
+
+**Current Setup**: Terraform Cloud is already in use with a hierarchical organization structure:
+- **Organization Level**: One TFC organization (metrolinx)
+- **Project Level**: Per application → Each application gets its own project for logical grouping
+- **Workspace Level**: Per resource → Each resource (e.g., VMs) gets its own dedicated workspace
+  - VM workspaces organized by **purpose** (web servers, database servers, etc.)
+  - Each workspace maintains its own **dedicated state file**
+  - State file isolation: **Per Application × Per Environment × Per Resource Type**
+
+**Example**: For a database application in production:
+- Project: `database-app`
+- Workspaces: `db-server-prod`, `db-backup-prod`, `db-cache-prod` (each with separate state)
 
 **Description**: Remote state management and workspace orchestration platform used across multiple repositories for centralized Terraform state management, VCS integration, and automated deployments. Enables team collaboration and provides enhanced security for sensitive infrastructure variables.
 
@@ -235,6 +249,10 @@ Metrolinx is planning a phased migration of Terraform execution from GitHub Acti
 - **Azure IaC** - Primary monorepo (heavy lift)
 - **AZ Policy Repo** - Lighter lift for policy definitions
 
+### Out of Scope (Already on Terraform Cloud)
+- **Azure Products IaC** - Already migrated, serves as reference pattern
+- **Ansible Terraform Cloud Integration** - Already operational with existing TFC integration
+
 ### Workspace Strategy: Addressing the 60+ Workload Directories
 
 **Challenge**: Azure-IaC contains 60+ workload directories. A naive mapping (1 directory = 1 workspace × 4 environments) would create 240+ workspaces—unmanageable at scale.
@@ -243,6 +261,10 @@ Metrolinx is planning a phased migration of Terraform execution from GitHub Acti
 - **Option A**: Group related workloads by function/team → ~24-30 workspaces per environment (more manageable)
 - **Option B**: Consolidated state per environment → 4 workspaces total (simpler but less granular)
 - **Option C**: Hybrid approach → Balance granularity with manageability
+
+**Current TFC Pattern (Reference)**: Azure Products IaC already uses the hierarchical model:
+- Per application → Per environment → Per resource type (with dedicated state files)
+- This pattern will inform workspace consolidation decisions for Azure IaC
 
 **HashiCorp will help determine optimal workspace structure** during Phase 0 to ensure scalability without operational overhead.
 
@@ -266,12 +288,14 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Identify current backends, variables, and secrets
 - Determine optimal workspace mapping for 60+ workload directories
 - Map each existing state to a future Terraform Cloud workspace
+- Review existing TFC patterns from Azure Products IaC for consistency
 
 **HashiCorp Responsibilities:**
 - Review current Terraform execution model and backend usage
 - Validate state architecture and proposed workspace mapping strategy
 - Recommend optimal workspace consolidation approach
 - Identify gaps or changes in recommended practices
+- Compare Azure Products IaC TFC structure with Azure IaC requirements
 
 **Outcome**: Clear inventory, validated migration roadmap, and workspace strategy defined
 
@@ -287,6 +311,7 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Execute dry-runs for non-production workspaces
 - Validate clean plans and expected behavior post-migration
 - Document migration procedures and troubleshooting guides
+- Ensure consistency with existing Azure Products IaC TFC structure
 
 **HashiCorp Responsibilities:**
 - Assist with TFC organization setup
@@ -341,6 +366,7 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Normalize variables, naming, and access controls
 - Formalize operating and support model
 - Complete team training and knowledge transfer
+- Consolidate with existing Azure Products IaC team practices
 
 **Outcome**: Single source of truth (TFC); legacy systems retired; team self-sufficient
 
@@ -354,6 +380,7 @@ The migration will be delivered in **controlled phases** to minimize risk, with 
 - Dynamic Azure credentials with SSO
 - Policy-as-code and automated approvals
 - Drift detection and self-service provisioning
+- Reusable workspace templates based on proven patterns
 
 **Outcome**: Platform ready for self-service and advanced automation
 
@@ -477,7 +504,7 @@ For each Terraform state, follow this consistent process:
 
 ## Summary Statement
 
-This migration addresses a known and growing operational risk around Terraform state consistency while modernizing governance, security, and auditability. By using a phased, low-risk approach with targeted HashiCorp involvement and comprehensive contingency planning, Metrolinx can adopt Terraform Cloud as a stable enterprise platform without disrupting day-to-day engineering workflows. The investment of ~600 hours over 6 months delivers immediate operational improvements and enables future self-service capabilities.
+This migration addresses a known and growing operational risk around Terraform state consistency while modernizing governance, security, and auditability. By using a phased, low-risk approach with targeted HashiCorp involvement and comprehensive contingency planning, Metrolinx can adopt Terraform Cloud as a stable enterprise platform without disrupting day-to-day engineering workflows. The investment of ~600 hours over 6 months delivers immediate operational improvements and enables future self-service capabilities. The existing TFC patterns from Azure Products IaC and Ansible Terraform Cloud Integration serve as proven reference implementations for this migration.
 
 ---
 
