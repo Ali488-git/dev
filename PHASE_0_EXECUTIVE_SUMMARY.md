@@ -8,8 +8,6 @@
 | Metric | Value |
 |--------|-------|
 | **Duration** | Weeks 1-3 |
-| **Effort (Manual)** | 26 hours |
-| **Copilot Assistance** | 11 hours |
 | **Total Effort** | 37 hours |
 | **Deliverables** | 15 documents + stakeholder sign-off |
 
