@@ -11,7 +11,6 @@
 | **Effort (Manual)** | 26 hours |
 | **Copilot Assistance** | 11 hours |
 | **Total Effort** | 37 hours |
-| **Cost** | ~$5,500 (at $150/hr) |
 | **Deliverables** | 15 documents + stakeholder sign-off |
 
 ---
