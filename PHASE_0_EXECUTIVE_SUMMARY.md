@@ -18,7 +18,7 @@
 ## OBJECTIVES
 
 1. Complete inventory of current Terraform state (all repos, backends, environments)
-2. Design workspace consolidation strategy (240+ directories to 20-30 workspaces)
+2. Design workspace consolidation strategy (60 directories to 240+ workspaces)
 3. Validate approach with HashiCorp partner
 4. Identify risks and mitigation strategies
 5. Prepare team and secure stakeholder approval
@@ -33,7 +33,7 @@
 | Day | Activity | Effort | Deliverable |
 |-----|----------|--------|-------------|
 | 1-2 | State file inventory (all repos) | 3h | CSV: All state files + metadata |
-| 3-4 | Directory mapping & categorization | 3h | CSV: 240+ directories aggregated |
+| 3-4 | Directory mapping & categorization | 3h | CSV: 60+ directories aggregated |
 | 5 | Backend configuration audit | 2h | JSON: Backend specs + usage |
 
 **Owner:** Infrastructure Lead
@@ -46,7 +46,7 @@
 | Day | Activity | Effort | Deliverable |
 |-----|----------|--------|-------------|
 | 6-7 | Review current TFC patterns | 2h | Analysis document |
-| 8-9 | Design workspace consolidation | 3h | Workspace mapping (20-30 workspaces) |
+| 8-9 | Design workspace consolidation | 3h | Workspace mapping (240+ workspaces) |
 | 10 | Prepare HashiCorp package | 2h | Documentation + slides |
 | 10 | HashiCorp kickoff call | 1h | Feedback + action items |
 
